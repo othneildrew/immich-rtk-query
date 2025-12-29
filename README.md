@@ -127,16 +127,15 @@ export const store = configureStore({
 
 ### 2. Configure the Base URL and Authentication
 
-You can configure the Immich API base URL and add authentication by creating a custom base query:
+Before using the API, configure it with your Immich instance URL and authentication. Call `configureImmichApi` before your app starts:
 
 ```typescript
-import { immichApi } from 'immich-rtk-query'
-import { fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { configureImmichApi, immichApi } from 'immich-rtk-query'
 
-// Create a custom base query with your Immich instance URL and auth
-const baseQueryWithAuth = fetchBaseQuery({
+// Configure the API with your Immich instance
+configureImmichApi({
   baseUrl: 'https://your-immich-instance.com/api',
-  prepareHeaders: (headers) => {
+  prepareHeaders: (headers, { getState }) => {
     // Add authentication
     const apiKey = localStorage.getItem('immich-api-key')
     if (apiKey) {
@@ -144,28 +143,27 @@ const baseQueryWithAuth = fetchBaseQuery({
     }
     return headers
   },
+  // All fetchBaseQuery options are supported:
+  credentials: 'include', // Include cookies
+  // mode: 'cors',
+  // cache: 'no-cache',
+  // etc.
 })
 
-// Enhance the API with your custom base query
-const customizedApi = immichApi.enhanceEndpoints({
-  endpoints: {
-    // You can customize specific endpoints here if needed
-  },
-})
-
-// Update your store to use the customized API
+// Then set up your store
 export const store = configureStore({
   reducer: {
-    [customizedApi.reducerPath]: customizedApi.reducer,
+    [immichApi.reducerPath]: immichApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(customizedApi.middleware),
+    getDefaultMiddleware().concat(immichApi.middleware),
 })
 ```
 
-**Note:** The base API uses `baseUrl: '/'` by default. You'll need to either:
-- Configure your app's proxy to forward requests to your Immich instance, or
-- Create a custom API instance with the full Immich URL as shown above
+**Note:**
+- Call `configureImmichApi` once, before rendering your app
+- All `fetchBaseQuery` options are supported (baseUrl, prepareHeaders, credentials, headers, mode, cache, etc.)
+- The base API uses `baseUrl: '/'` by default if not configured
 
 ### 3. Use the Hooks in Your Components
 
