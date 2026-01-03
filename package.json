@@ -25,9 +25,6 @@
     "clean": "rm -rf dist",
     "test": "echo \"Note: no test specified. Passing...\" && exit 0"
   },
-  "publishConfig": {
-    "@othneildrew:registry": "https://npm.pkg.github.com"
-  },
   "keywords": [
     "immich",
     "rtk-query",
@@ -42,7 +39,7 @@
     "type": "git",
     "url": "https://github.com/othneildrew/immich-rtk-query.git"
   },
-  "homepage": "https://github.com/othneildrew/immich-rtk-query.git#readme",
+  "homepage": "https://github.com/othneildrew/immich-rtk-query#readme",
   "bugs": {
     "url": "https://github.com/othneildrew/immich-rtk-query/issues"
   },
