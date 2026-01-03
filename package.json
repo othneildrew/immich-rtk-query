@@ -38,6 +38,14 @@
   ],
   "author": "Othneil Drew",
   "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/othneildrew/immich-rtk-query.git"
+  },
+  "homepage": "https://github.com/othneildrew/immich-rtk-query.git#readme",
+  "bugs": {
+    "url": "https://github.com/othneildrew/immich-rtk-query/issues"
+  },
   "type": "module",
   "peerDependencies": {
     "@reduxjs/toolkit": "^2.11.2",
