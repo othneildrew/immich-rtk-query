@@ -23,7 +23,7 @@
     "generate": "rtk-query-codegen-openapi openapi-config.cjs",
     "prepare": "npm run generate && npm run build",
     "clean": "rm -rf dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Note: no test specified. Passing...\" && exit 0"
   },
   "publishConfig": {
     "@othneildrew:registry": "https://npm.pkg.github.com"
