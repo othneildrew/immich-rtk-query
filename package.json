@@ -25,6 +25,9 @@
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "publishConfig": {
+    "@othneildrew:registry": "https://npm.pkg.github.com"
+  },
   "keywords": [
     "immich",
     "rtk-query",
