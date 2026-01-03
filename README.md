@@ -234,7 +234,7 @@ export const { useGetMyCustomDataQuery } = extendedApi
 - [x] Auto-generate TypeScript types from Immich OpenAPI spec
 - [x] Generate React Query hooks
 - [x] Support for all Immich API endpoints
-- [ ] Add usage examples repository
+- [x] Add usage examples repository
 - [ ] Add integration tests
 - [ ] Support for custom transformers
 - [ ] Automatic updates when Immich API changes
