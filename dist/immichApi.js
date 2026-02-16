@@ -2,6 +2,7 @@ import { immichApi as api } from "./emptyApi";
 export const addTagTypes = [
     "Activities",
     "Authentication (admin)",
+    "Database Backups (admin)",
     "Maintenance (admin)",
     "Notifications (admin)",
     "Users (admin)",
@@ -85,6 +86,37 @@ const injectedRtkApi = api
             query: () => ({ url: `/admin/auth/unlink-all`, method: "POST" }),
             invalidatesTags: ["Authentication (admin)"],
         }),
+        deleteDatabaseBackup: build.mutation({
+            query: (queryArg) => ({
+                url: `/admin/database-backups`,
+                method: "DELETE",
+                body: queryArg,
+            }),
+            invalidatesTags: ["Database Backups (admin)"],
+        }),
+        listDatabaseBackups: build.query({
+            query: () => ({ url: `/admin/database-backups` }),
+            providesTags: ["Database Backups (admin)"],
+        }),
+        startDatabaseRestoreFlow: build.mutation({
+            query: () => ({
+                url: `/admin/database-backups/start-restore`,
+                method: "POST",
+            }),
+            invalidatesTags: ["Database Backups (admin)"],
+        }),
+        uploadDatabaseBackup: build.mutation({
+            query: (queryArg) => ({
+                url: `/admin/database-backups/upload`,
+                method: "POST",
+                body: queryArg,
+            }),
+            invalidatesTags: ["Database Backups (admin)"],
+        }),
+        downloadDatabaseBackup: build.query({
+            query: (queryArg) => ({ url: `/admin/database-backups/${queryArg}` }),
+            providesTags: ["Database Backups (admin)"],
+        }),
         setMaintenanceMode: build.mutation({
             query: (queryArg) => ({
                 url: `/admin/maintenance`,
@@ -93,6 +125,10 @@ const injectedRtkApi = api
             }),
             invalidatesTags: ["Maintenance (admin)"],
         }),
+        detectPriorInstall: build.query({
+            query: () => ({ url: `/admin/maintenance/detect-install` }),
+            providesTags: ["Maintenance (admin)"],
+        }),
         maintenanceLogin: build.mutation({
             query: (queryArg) => ({
                 url: `/admin/maintenance/login`,
@@ -100,6 +136,10 @@ const injectedRtkApi = api
                 body: queryArg,
             }),
             invalidatesTags: ["Maintenance (admin)"],
+        }),
+        getMaintenanceStatus: build.query({
+            query: () => ({ url: `/admin/maintenance/status` }),
+            providesTags: ["Maintenance (admin)"],
         }),
         createNotification: build.mutation({
             query: (queryArg) => ({
@@ -399,6 +439,22 @@ const injectedRtkApi = api
             }),
             invalidatesTags: ["Assets"],
         }),
+        deleteBulkAssetMetadata: build.mutation({
+            query: (queryArg) => ({
+                url: `/assets/metadata`,
+                method: "DELETE",
+                body: queryArg,
+            }),
+            invalidatesTags: ["Assets"],
+        }),
+        updateBulkAssetMetadata: build.mutation({
+            query: (queryArg) => ({
+                url: `/assets/metadata`,
+                method: "PUT",
+                body: queryArg,
+            }),
+            invalidatesTags: ["Assets"],
+        }),
         getRandom: build.query({
             query: (queryArg) => ({
                 url: `/assets/random`,
@@ -437,6 +493,25 @@ const injectedRtkApi = api
             }),
             invalidatesTags: ["Assets"],
         }),
+        removeAssetEdits: build.mutation({
+            query: (queryArg) => ({
+                url: `/assets/${queryArg}/edits`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Assets"],
+        }),
+        getAssetEdits: build.query({
+            query: (queryArg) => ({ url: `/assets/${queryArg}/edits` }),
+            providesTags: ["Assets"],
+        }),
+        editAsset: build.mutation({
+            query: (queryArg) => ({
+                url: `/assets/${queryArg.id}/edits`,
+                method: "PUT",
+                body: queryArg.assetEditActionListDto,
+            }),
+            invalidatesTags: ["Assets"],
+        }),
         getAssetMetadata: build.query({
             query: (queryArg) => ({ url: `/assets/${queryArg}/metadata` }),
             providesTags: ["Assets"],
@@ -470,6 +545,7 @@ const injectedRtkApi = api
             query: (queryArg) => ({
                 url: `/assets/${queryArg.id}/original`,
                 params: {
+                    edited: queryArg.edited,
                     key: queryArg.key,
                     slug: queryArg.slug,
                 },
@@ -492,6 +568,7 @@ const injectedRtkApi = api
             query: (queryArg) => ({
                 url: `/assets/${queryArg.id}/thumbnail`,
                 params: {
+                    edited: queryArg.edited,
                     key: queryArg.key,
                     size: queryArg.size,
                     slug: queryArg.slug,
@@ -1017,6 +1094,10 @@ const injectedRtkApi = api
             query: () => ({ url: `/plugins` }),
             providesTags: ["Plugins"],
         }),
+        getPluginTriggers: build.query({
+            query: () => ({ url: `/plugins/triggers` }),
+            providesTags: ["Plugins"],
+        }),
         getPlugin: build.query({
             query: (queryArg) => ({ url: `/plugins/${queryArg}` }),
             providesTags: ["Plugins"],
@@ -1275,7 +1356,8 @@ const injectedRtkApi = api
             query: (queryArg) => ({
                 url: `/shared-links`,
                 params: {
-                    albumId: queryArg,
+                    albumId: queryArg.albumId,
+                    id: queryArg.id,
                 },
             }),
             providesTags: ["Shared links"],
@@ -1714,4 +1796,4 @@ const injectedRtkApi = api
     overrideExisting: false,
 });
 export { injectedRtkApi as enhancedImmichApi };
-export const { useGetActivitiesQuery, useCreateActivityMutation, useGetActivityStatisticsQuery, useDeleteActivityMutation, useUnlinkAllOAuthAccountsAdminMutation, useSetMaintenanceModeMutation, useMaintenanceLoginMutation, useCreateNotificationMutation, useGetNotificationTemplateAdminMutation, useSendTestEmailAdminMutation, useSearchUsersAdminQuery, useCreateUserAdminMutation, useDeleteUserAdminMutation, useGetUserAdminQuery, useUpdateUserAdminMutation, useGetUserPreferencesAdminQuery, useUpdateUserPreferencesAdminMutation, useRestoreUserAdminMutation, useGetUserSessionsAdminQuery, useGetUserStatisticsAdminQuery, useGetAllAlbumsQuery, useCreateAlbumMutation, useAddAssetsToAlbumsMutation, useGetAlbumStatisticsQuery, useDeleteAlbumMutation, useGetAlbumInfoQuery, useUpdateAlbumInfoMutation, useRemoveAssetFromAlbumMutation, useAddAssetsToAlbumMutation, useRemoveUserFromAlbumMutation, useUpdateAlbumUserMutation, useAddUsersToAlbumMutation, useGetApiKeysQuery, useCreateApiKeyMutation, useGetMyApiKeyQuery, useDeleteApiKeyMutation, useGetApiKeyQuery, useUpdateApiKeyMutation, useDeleteAssetsMutation, useUploadAssetMutation, useUpdateAssetsMutation, useCheckBulkUploadMutation, useCopyAssetMutation, useGetAllUserAssetsByDeviceIdQuery, useCheckExistingAssetsMutation, useRunAssetJobsMutation, useGetRandomQuery, useGetAssetStatisticsQuery, useGetAssetInfoQuery, useUpdateAssetMutation, useGetAssetMetadataQuery, useUpdateAssetMetadataMutation, useDeleteAssetMetadataMutation, useGetAssetMetadataByKeyQuery, useGetAssetOcrQuery, useDownloadAssetQuery, useReplaceAssetMutation, useViewAssetQuery, usePlayAssetVideoQuery, useSignUpAdminMutation, useChangePasswordMutation, useLoginMutation, useLogoutMutation, useResetPinCodeMutation, useSetupPinCodeMutation, useChangePinCodeMutation, useLockAuthSessionMutation, useUnlockAuthSessionMutation, useGetAuthStatusQuery, useValidateAccessTokenMutation, useDownloadArchiveMutation, useGetDownloadInfoMutation, useDeleteDuplicatesMutation, useGetAssetDuplicatesQuery, useDeleteDuplicateMutation, useGetFacesQuery, useCreateFaceMutation, useDeleteFaceMutation, useReassignFacesByIdMutation, useGetQueuesLegacyQuery, useCreateJobMutation, useRunQueueCommandLegacyMutation, useGetAllLibrariesQuery, useCreateLibraryMutation, useDeleteLibraryMutation, useGetLibraryQuery, useUpdateLibraryMutation, useScanLibraryMutation, useGetLibraryStatisticsQuery, useValidateMutation, useGetMapMarkersQuery, useReverseGeocodeQuery, useSearchMemoriesQuery, useCreateMemoryMutation, useMemoriesStatisticsQuery, useDeleteMemoryMutation, useGetMemoryQuery, useUpdateMemoryMutation, useRemoveMemoryAssetsMutation, useAddMemoryAssetsMutation, useDeleteNotificationsMutation, useGetNotificationsQuery, useUpdateNotificationsMutation, useDeleteNotificationMutation, useGetNotificationQuery, useUpdateNotificationMutation, useStartOAuthMutation, useFinishOAuthMutation, useLinkOAuthAccountMutation, useRedirectOAuthToMobileQuery, useUnlinkOAuthAccountMutation, useGetPartnersQuery, useCreatePartnerMutation, useRemovePartnerMutation, useCreatePartnerDeprecatedMutation, useUpdatePartnerMutation, useDeletePeopleMutation, useGetAllPeopleQuery, useCreatePersonMutation, useUpdatePeopleMutation, useDeletePersonMutation, useGetPersonQuery, useUpdatePersonMutation, useMergePersonMutation, useReassignFacesMutation, useGetPersonStatisticsQuery, useGetPersonThumbnailQuery, useGetPluginsQuery, useGetPluginQuery, useGetQueuesQuery, useGetQueueQuery, useUpdateQueueMutation, useEmptyQueueMutation, useGetQueueJobsQuery, useGetAssetsByCityQuery, useGetExploreDataQuery, useSearchLargeAssetsMutation, useSearchAssetsMutation, useSearchPersonQuery, useSearchPlacesQuery, useSearchRandomMutation, useSearchSmartMutation, useSearchAssetStatisticsMutation, useGetSearchSuggestionsQuery, useGetAboutInfoQuery, useGetApkLinksQuery, useGetServerConfigQuery, useGetServerFeaturesQuery, useDeleteServerLicenseMutation, useGetServerLicenseQuery, useSetServerLicenseMutation, useGetSupportedMediaTypesQuery, usePingServerQuery, useGetServerStatisticsQuery, useGetStorageQuery, useGetThemeQuery, useGetServerVersionQuery, useGetVersionCheckQuery, useGetVersionHistoryQuery, useDeleteAllSessionsMutation, useGetSessionsQuery, useCreateSessionMutation, useDeleteSessionMutation, useUpdateSessionMutation, useLockSessionMutation, useGetAllSharedLinksQuery, useCreateSharedLinkMutation, useGetMySharedLinkQuery, useRemoveSharedLinkMutation, useGetSharedLinkByIdQuery, useUpdateSharedLinkMutation, useRemoveSharedLinkAssetsMutation, useAddSharedLinkAssetsMutation, useDeleteStacksMutation, useSearchStacksQuery, useCreateStackMutation, useDeleteStackMutation, useGetStackQuery, useUpdateStackMutation, useRemoveAssetFromStackMutation, useDeleteSyncAckMutation, useGetSyncAckQuery, useSendSyncAckMutation, useGetDeltaSyncMutation, useGetFullSyncForUserMutation, useGetSyncStreamMutation, useGetConfigQuery, useUpdateConfigMutation, useGetConfigDefaultsQuery, useGetStorageTemplateOptionsQuery, useGetAdminOnboardingQuery, useUpdateAdminOnboardingMutation, useGetReverseGeocodingStateQuery, useGetVersionCheckStateQuery, useGetAllTagsQuery, useCreateTagMutation, useUpsertTagsMutation, useBulkTagAssetsMutation, useDeleteTagMutation, useGetTagByIdQuery, useUpdateTagMutation, useUntagAssetsMutation, useTagAssetsMutation, useGetTimeBucketQuery, useGetTimeBucketsQuery, useEmptyTrashMutation, useRestoreTrashMutation, useRestoreAssetsMutation, useSearchUsersQuery, useGetMyUserQuery, useUpdateMyUserMutation, useDeleteUserLicenseMutation, useGetUserLicenseQuery, useSetUserLicenseMutation, useDeleteUserOnboardingMutation, useGetUserOnboardingQuery, useSetUserOnboardingMutation, useGetMyPreferencesQuery, useUpdateMyPreferencesMutation, useDeleteProfileImageMutation, useCreateProfileImageMutation, useGetUserQuery, useGetProfileImageQuery, useGetAssetsByOriginalPathQuery, useGetUniqueOriginalPathsQuery, useGetWorkflowsQuery, useCreateWorkflowMutation, useDeleteWorkflowMutation, useGetWorkflowQuery, useUpdateWorkflowMutation, } = injectedRtkApi;
+export const { useGetActivitiesQuery, useCreateActivityMutation, useGetActivityStatisticsQuery, useDeleteActivityMutation, useUnlinkAllOAuthAccountsAdminMutation, useDeleteDatabaseBackupMutation, useListDatabaseBackupsQuery, useStartDatabaseRestoreFlowMutation, useUploadDatabaseBackupMutation, useDownloadDatabaseBackupQuery, useSetMaintenanceModeMutation, useDetectPriorInstallQuery, useMaintenanceLoginMutation, useGetMaintenanceStatusQuery, useCreateNotificationMutation, useGetNotificationTemplateAdminMutation, useSendTestEmailAdminMutation, useSearchUsersAdminQuery, useCreateUserAdminMutation, useDeleteUserAdminMutation, useGetUserAdminQuery, useUpdateUserAdminMutation, useGetUserPreferencesAdminQuery, useUpdateUserPreferencesAdminMutation, useRestoreUserAdminMutation, useGetUserSessionsAdminQuery, useGetUserStatisticsAdminQuery, useGetAllAlbumsQuery, useCreateAlbumMutation, useAddAssetsToAlbumsMutation, useGetAlbumStatisticsQuery, useDeleteAlbumMutation, useGetAlbumInfoQuery, useUpdateAlbumInfoMutation, useRemoveAssetFromAlbumMutation, useAddAssetsToAlbumMutation, useRemoveUserFromAlbumMutation, useUpdateAlbumUserMutation, useAddUsersToAlbumMutation, useGetApiKeysQuery, useCreateApiKeyMutation, useGetMyApiKeyQuery, useDeleteApiKeyMutation, useGetApiKeyQuery, useUpdateApiKeyMutation, useDeleteAssetsMutation, useUploadAssetMutation, useUpdateAssetsMutation, useCheckBulkUploadMutation, useCopyAssetMutation, useGetAllUserAssetsByDeviceIdQuery, useCheckExistingAssetsMutation, useRunAssetJobsMutation, useDeleteBulkAssetMetadataMutation, useUpdateBulkAssetMetadataMutation, useGetRandomQuery, useGetAssetStatisticsQuery, useGetAssetInfoQuery, useUpdateAssetMutation, useRemoveAssetEditsMutation, useGetAssetEditsQuery, useEditAssetMutation, useGetAssetMetadataQuery, useUpdateAssetMetadataMutation, useDeleteAssetMetadataMutation, useGetAssetMetadataByKeyQuery, useGetAssetOcrQuery, useDownloadAssetQuery, useReplaceAssetMutation, useViewAssetQuery, usePlayAssetVideoQuery, useSignUpAdminMutation, useChangePasswordMutation, useLoginMutation, useLogoutMutation, useResetPinCodeMutation, useSetupPinCodeMutation, useChangePinCodeMutation, useLockAuthSessionMutation, useUnlockAuthSessionMutation, useGetAuthStatusQuery, useValidateAccessTokenMutation, useDownloadArchiveMutation, useGetDownloadInfoMutation, useDeleteDuplicatesMutation, useGetAssetDuplicatesQuery, useDeleteDuplicateMutation, useGetFacesQuery, useCreateFaceMutation, useDeleteFaceMutation, useReassignFacesByIdMutation, useGetQueuesLegacyQuery, useCreateJobMutation, useRunQueueCommandLegacyMutation, useGetAllLibrariesQuery, useCreateLibraryMutation, useDeleteLibraryMutation, useGetLibraryQuery, useUpdateLibraryMutation, useScanLibraryMutation, useGetLibraryStatisticsQuery, useValidateMutation, useGetMapMarkersQuery, useReverseGeocodeQuery, useSearchMemoriesQuery, useCreateMemoryMutation, useMemoriesStatisticsQuery, useDeleteMemoryMutation, useGetMemoryQuery, useUpdateMemoryMutation, useRemoveMemoryAssetsMutation, useAddMemoryAssetsMutation, useDeleteNotificationsMutation, useGetNotificationsQuery, useUpdateNotificationsMutation, useDeleteNotificationMutation, useGetNotificationQuery, useUpdateNotificationMutation, useStartOAuthMutation, useFinishOAuthMutation, useLinkOAuthAccountMutation, useRedirectOAuthToMobileQuery, useUnlinkOAuthAccountMutation, useGetPartnersQuery, useCreatePartnerMutation, useRemovePartnerMutation, useCreatePartnerDeprecatedMutation, useUpdatePartnerMutation, useDeletePeopleMutation, useGetAllPeopleQuery, useCreatePersonMutation, useUpdatePeopleMutation, useDeletePersonMutation, useGetPersonQuery, useUpdatePersonMutation, useMergePersonMutation, useReassignFacesMutation, useGetPersonStatisticsQuery, useGetPersonThumbnailQuery, useGetPluginsQuery, useGetPluginTriggersQuery, useGetPluginQuery, useGetQueuesQuery, useGetQueueQuery, useUpdateQueueMutation, useEmptyQueueMutation, useGetQueueJobsQuery, useGetAssetsByCityQuery, useGetExploreDataQuery, useSearchLargeAssetsMutation, useSearchAssetsMutation, useSearchPersonQuery, useSearchPlacesQuery, useSearchRandomMutation, useSearchSmartMutation, useSearchAssetStatisticsMutation, useGetSearchSuggestionsQuery, useGetAboutInfoQuery, useGetApkLinksQuery, useGetServerConfigQuery, useGetServerFeaturesQuery, useDeleteServerLicenseMutation, useGetServerLicenseQuery, useSetServerLicenseMutation, useGetSupportedMediaTypesQuery, usePingServerQuery, useGetServerStatisticsQuery, useGetStorageQuery, useGetThemeQuery, useGetServerVersionQuery, useGetVersionCheckQuery, useGetVersionHistoryQuery, useDeleteAllSessionsMutation, useGetSessionsQuery, useCreateSessionMutation, useDeleteSessionMutation, useUpdateSessionMutation, useLockSessionMutation, useGetAllSharedLinksQuery, useCreateSharedLinkMutation, useGetMySharedLinkQuery, useRemoveSharedLinkMutation, useGetSharedLinkByIdQuery, useUpdateSharedLinkMutation, useRemoveSharedLinkAssetsMutation, useAddSharedLinkAssetsMutation, useDeleteStacksMutation, useSearchStacksQuery, useCreateStackMutation, useDeleteStackMutation, useGetStackQuery, useUpdateStackMutation, useRemoveAssetFromStackMutation, useDeleteSyncAckMutation, useGetSyncAckQuery, useSendSyncAckMutation, useGetDeltaSyncMutation, useGetFullSyncForUserMutation, useGetSyncStreamMutation, useGetConfigQuery, useUpdateConfigMutation, useGetConfigDefaultsQuery, useGetStorageTemplateOptionsQuery, useGetAdminOnboardingQuery, useUpdateAdminOnboardingMutation, useGetReverseGeocodingStateQuery, useGetVersionCheckStateQuery, useGetAllTagsQuery, useCreateTagMutation, useUpsertTagsMutation, useBulkTagAssetsMutation, useDeleteTagMutation, useGetTagByIdQuery, useUpdateTagMutation, useUntagAssetsMutation, useTagAssetsMutation, useGetTimeBucketQuery, useGetTimeBucketsQuery, useEmptyTrashMutation, useRestoreTrashMutation, useRestoreAssetsMutation, useSearchUsersQuery, useGetMyUserQuery, useUpdateMyUserMutation, useDeleteUserLicenseMutation, useGetUserLicenseQuery, useSetUserLicenseMutation, useDeleteUserOnboardingMutation, useGetUserOnboardingQuery, useSetUserOnboardingMutation, useGetMyPreferencesQuery, useUpdateMyPreferencesMutation, useDeleteProfileImageMutation, useCreateProfileImageMutation, useGetUserQuery, useGetProfileImageQuery, useGetAssetsByOriginalPathQuery, useGetUniqueOriginalPathsQuery, useGetWorkflowsQuery, useCreateWorkflowMutation, useDeleteWorkflowMutation, useGetWorkflowQuery, useUpdateWorkflowMutation, } = injectedRtkApi;
