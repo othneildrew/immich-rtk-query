@@ -6,10 +6,10 @@ export const addTagTypes = [
     "Maintenance (admin)",
     "Notifications (admin)",
     "Users (admin)",
+    "Deprecated",
     "Albums",
     "API keys",
     "Assets",
-    "Deprecated",
     "Authentication",
     "Download",
     "Duplicates",
@@ -117,6 +117,40 @@ const injectedRtkApi = api
             query: (queryArg) => ({ url: `/admin/database-backups/${queryArg}` }),
             providesTags: ["Database Backups (admin)"],
         }),
+        getIntegrityReport: build.query({
+            query: (queryArg) => ({
+                url: `/admin/integrity/report`,
+                params: {
+                    cursor: queryArg.cursor,
+                    limit: queryArg.limit,
+                    type: queryArg["type"],
+                },
+            }),
+            providesTags: ["Maintenance (admin)"],
+        }),
+        deleteIntegrityReport: build.mutation({
+            query: (queryArg) => ({
+                url: `/admin/integrity/report/${queryArg}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Maintenance (admin)"],
+        }),
+        getIntegrityReportFile: build.query({
+            query: (queryArg) => ({
+                url: `/admin/integrity/report/${queryArg}/file`,
+            }),
+            providesTags: ["Maintenance (admin)"],
+        }),
+        getIntegrityReportCsv: build.query({
+            query: (queryArg) => ({
+                url: `/admin/integrity/report/${queryArg}/csv`,
+            }),
+            providesTags: ["Maintenance (admin)"],
+        }),
+        getIntegrityReportSummary: build.query({
+            query: () => ({ url: `/admin/integrity/summary` }),
+            providesTags: ["Maintenance (admin)"],
+        }),
         setMaintenanceMode: build.mutation({
             query: (queryArg) => ({
                 url: `/admin/maintenance`,
@@ -201,7 +235,18 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.userAdminUpdateDto,
             }),
-            invalidatesTags: ["Users (admin)"],
+            invalidatesTags: ["Users (admin)", "Deprecated"],
+        }),
+        getUserCalendarHeatmapAdmin: build.query({
+            query: (queryArg) => ({
+                url: `/admin/users/${queryArg.id}/calendar-heatmap`,
+                params: {
+                    from: queryArg["from"],
+                    to: queryArg.to,
+                    type: queryArg["type"],
+                },
+            }),
+            providesTags: ["Users (admin)"],
         }),
         getUserPreferencesAdmin: build.query({
             query: (queryArg) => ({ url: `/admin/users/${queryArg}/preferences` }),
@@ -213,7 +258,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.userPreferencesUpdateDto,
             }),
-            invalidatesTags: ["Users (admin)"],
+            invalidatesTags: ["Users (admin)", "Deprecated"],
         }),
         restoreUserAdmin: build.mutation({
             query: (queryArg) => ({
@@ -242,7 +287,10 @@ const injectedRtkApi = api
                 url: `/albums`,
                 params: {
                     assetId: queryArg.assetId,
-                    shared: queryArg.shared,
+                    id: queryArg.id,
+                    isOwned: queryArg.isOwned,
+                    isShared: queryArg.isShared,
+                    name: queryArg.name,
                 },
             }),
             providesTags: ["Albums"],
@@ -259,11 +307,7 @@ const injectedRtkApi = api
             query: (queryArg) => ({
                 url: `/albums/assets`,
                 method: "PUT",
-                body: queryArg.albumsAddAssetsDto,
-                params: {
-                    key: queryArg.key,
-                    slug: queryArg.slug,
-                },
+                body: queryArg,
             }),
             invalidatesTags: ["Albums"],
         }),
@@ -281,7 +325,6 @@ const injectedRtkApi = api
                 params: {
                     key: queryArg.key,
                     slug: queryArg.slug,
-                    withoutAssets: queryArg.withoutAssets,
                 },
             }),
             providesTags: ["Albums"],
@@ -307,12 +350,18 @@ const injectedRtkApi = api
                 url: `/albums/${queryArg.id}/assets`,
                 method: "PUT",
                 body: queryArg.bulkIdsDto,
+            }),
+            invalidatesTags: ["Albums"],
+        }),
+        getAlbumMapMarkers: build.query({
+            query: (queryArg) => ({
+                url: `/albums/${queryArg.id}/map-markers`,
                 params: {
                     key: queryArg.key,
                     slug: queryArg.slug,
                 },
             }),
-            invalidatesTags: ["Albums"],
+            providesTags: ["Albums"],
         }),
         removeUserFromAlbum: build.mutation({
             query: (queryArg) => ({
@@ -370,7 +419,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.apiKeyUpdateDto,
             }),
-            invalidatesTags: ["API keys"],
+            invalidatesTags: ["API keys", "Deprecated"],
         }),
         deleteAssets: build.mutation({
             query: (queryArg) => ({
@@ -401,7 +450,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg,
             }),
-            invalidatesTags: ["Assets"],
+            invalidatesTags: ["Assets", "Deprecated"],
         }),
         checkBulkUpload: build.mutation({
             query: (queryArg) => ({
@@ -415,18 +464,6 @@ const injectedRtkApi = api
             query: (queryArg) => ({
                 url: `/assets/copy`,
                 method: "PUT",
-                body: queryArg,
-            }),
-            invalidatesTags: ["Assets"],
-        }),
-        getAllUserAssetsByDeviceId: build.query({
-            query: (queryArg) => ({ url: `/assets/device/${queryArg}` }),
-            providesTags: ["Assets", "Deprecated"],
-        }),
-        checkExistingAssets: build.mutation({
-            query: (queryArg) => ({
-                url: `/assets/exist`,
-                method: "POST",
                 body: queryArg,
             }),
             invalidatesTags: ["Assets"],
@@ -455,15 +492,6 @@ const injectedRtkApi = api
             }),
             invalidatesTags: ["Assets"],
         }),
-        getRandom: build.query({
-            query: (queryArg) => ({
-                url: `/assets/random`,
-                params: {
-                    count: queryArg,
-                },
-            }),
-            providesTags: ["Assets", "Deprecated"],
-        }),
         getAssetStatistics: build.query({
             query: (queryArg) => ({
                 url: `/assets/statistics`,
@@ -491,7 +519,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.updateAssetDto,
             }),
-            invalidatesTags: ["Assets"],
+            invalidatesTags: ["Assets", "Deprecated"],
         }),
         removeAssetEdits: build.mutation({
             query: (queryArg) => ({
@@ -508,7 +536,7 @@ const injectedRtkApi = api
             query: (queryArg) => ({
                 url: `/assets/${queryArg.id}/edits`,
                 method: "PUT",
-                body: queryArg.assetEditActionListDto,
+                body: queryArg.assetEditsCreateDto,
             }),
             invalidatesTags: ["Assets"],
         }),
@@ -552,18 +580,6 @@ const injectedRtkApi = api
             }),
             providesTags: ["Assets"],
         }),
-        replaceAsset: build.mutation({
-            query: (queryArg) => ({
-                url: `/assets/${queryArg.id}/original`,
-                method: "PUT",
-                body: queryArg.assetMediaReplaceDto,
-                params: {
-                    key: queryArg.key,
-                    slug: queryArg.slug,
-                },
-            }),
-            invalidatesTags: ["Assets", "Deprecated"],
-        }),
         viewAsset: build.query({
             query: (queryArg) => ({
                 url: `/assets/${queryArg.id}/thumbnail`,
@@ -579,6 +595,53 @@ const injectedRtkApi = api
         playAssetVideo: build.query({
             query: (queryArg) => ({
                 url: `/assets/${queryArg.id}/video/playback`,
+                params: {
+                    key: queryArg.key,
+                    slug: queryArg.slug,
+                },
+            }),
+            providesTags: ["Assets"],
+        }),
+        getMainPlaylist: build.query({
+            query: (queryArg) => ({
+                url: `/assets/${queryArg.id}/video/stream/main.m3u8`,
+                params: {
+                    key: queryArg.key,
+                    slug: queryArg.slug,
+                },
+            }),
+            providesTags: ["Assets"],
+        }),
+        endSession: build.mutation({
+            query: (queryArg) => ({
+                url: `/assets/${queryArg.id}/video/stream/${queryArg.sessionId}`,
+                method: "DELETE",
+                params: {
+                    key: queryArg.key,
+                    slug: queryArg.slug,
+                },
+            }),
+            invalidatesTags: ["Assets"],
+        }),
+        getMediaPlaylist: build.query({
+            query: (queryArg) => ({
+                url: `/assets/${queryArg.id}/video/stream/${queryArg.sessionId}/${queryArg.variantIndex}/playlist.m3u8`,
+                headers: {
+                    "x-immich-hls-pos": queryArg["x-immich-hls-pos"],
+                },
+                params: {
+                    key: queryArg.key,
+                    slug: queryArg.slug,
+                },
+            }),
+            providesTags: ["Assets"],
+        }),
+        getSegment: build.query({
+            query: (queryArg) => ({
+                url: `/assets/${queryArg.id}/video/stream/${queryArg.sessionId}/${queryArg.variantIndex}/${queryArg.filename}`,
+                headers: {
+                    "x-immich-hls-msn": queryArg["x-immich-hls-msn"],
+                },
                 params: {
                     key: queryArg.key,
                     slug: queryArg.slug,
@@ -662,7 +725,7 @@ const injectedRtkApi = api
             query: (queryArg) => ({
                 url: `/download/archive`,
                 method: "POST",
-                body: queryArg.assetIdsDto,
+                body: queryArg.downloadArchiveDto,
                 params: {
                     key: queryArg.key,
                     slug: queryArg.slug,
@@ -693,6 +756,14 @@ const injectedRtkApi = api
         getAssetDuplicates: build.query({
             query: () => ({ url: `/duplicates` }),
             providesTags: ["Duplicates"],
+        }),
+        resolveDuplicates: build.mutation({
+            query: (queryArg) => ({
+                url: `/duplicates/resolve`,
+                method: "POST",
+                body: queryArg,
+            }),
+            invalidatesTags: ["Duplicates"],
         }),
         deleteDuplicate: build.mutation({
             query: (queryArg) => ({
@@ -779,7 +850,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.updateLibraryDto,
             }),
-            invalidatesTags: ["Libraries"],
+            invalidatesTags: ["Libraries", "Deprecated"],
         }),
         scanLibrary: build.mutation({
             query: (queryArg) => ({
@@ -877,7 +948,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.memoryUpdateDto,
             }),
-            invalidatesTags: ["Memories"],
+            invalidatesTags: ["Memories", "Deprecated"],
         }),
         removeMemoryAssets: build.mutation({
             query: (queryArg) => ({
@@ -945,6 +1016,14 @@ const injectedRtkApi = api
         startOAuth: build.mutation({
             query: (queryArg) => ({
                 url: `/oauth/authorize`,
+                method: "POST",
+                body: queryArg,
+            }),
+            invalidatesTags: ["Authentication"],
+        }),
+        logoutOAuth: build.mutation({
+            query: (queryArg) => ({
+                url: `/oauth/backchannel-logout`,
                 method: "POST",
                 body: queryArg,
             }),
@@ -1064,7 +1143,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.personUpdateDto,
             }),
-            invalidatesTags: ["People"],
+            invalidatesTags: ["People", "Deprecated"],
         }),
         mergePerson: build.mutation({
             query: (queryArg) => ({
@@ -1090,12 +1169,39 @@ const injectedRtkApi = api
             query: (queryArg) => ({ url: `/people/${queryArg}/thumbnail` }),
             providesTags: ["People"],
         }),
-        getPlugins: build.query({
-            query: () => ({ url: `/plugins` }),
+        searchPlugins: build.query({
+            query: (queryArg) => ({
+                url: `/plugins`,
+                params: {
+                    description: queryArg.description,
+                    enabled: queryArg.enabled,
+                    id: queryArg.id,
+                    name: queryArg.name,
+                    title: queryArg.title,
+                    version: queryArg.version,
+                },
+            }),
             providesTags: ["Plugins"],
         }),
-        getPluginTriggers: build.query({
-            query: () => ({ url: `/plugins/triggers` }),
+        searchPluginMethods: build.query({
+            query: (queryArg) => ({
+                url: `/plugins/methods`,
+                params: {
+                    description: queryArg.description,
+                    enabled: queryArg.enabled,
+                    id: queryArg.id,
+                    name: queryArg.name,
+                    pluginName: queryArg.pluginName,
+                    pluginVersion: queryArg.pluginVersion,
+                    title: queryArg.title,
+                    trigger: queryArg.trigger,
+                    type: queryArg["type"],
+                },
+            }),
+            providesTags: ["Plugins"],
+        }),
+        searchPluginTemplates: build.query({
+            query: () => ({ url: `/plugins/templates` }),
             providesTags: ["Plugins"],
         }),
         getPlugin: build.query({
@@ -1153,7 +1259,6 @@ const injectedRtkApi = api
                     country: queryArg.country,
                     createdAfter: queryArg.createdAfter,
                     createdBefore: queryArg.createdBefore,
-                    deviceId: queryArg.deviceId,
                     isEncoded: queryArg.isEncoded,
                     isFavorite: queryArg.isFavorite,
                     isMotion: queryArg.isMotion,
@@ -1298,10 +1403,6 @@ const injectedRtkApi = api
             query: () => ({ url: `/server/storage` }),
             providesTags: ["Server"],
         }),
-        getTheme: build.query({
-            query: () => ({ url: `/server/theme` }),
-            providesTags: ["Server"],
-        }),
         getServerVersion: build.query({
             query: () => ({ url: `/server/version` }),
             providesTags: ["Server"],
@@ -1343,7 +1444,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.sessionUpdateDto,
             }),
-            invalidatesTags: ["Sessions"],
+            invalidatesTags: ["Sessions", "Deprecated"],
         }),
         lockSession: build.mutation({
             query: (queryArg) => ({
@@ -1370,14 +1471,24 @@ const injectedRtkApi = api
             }),
             invalidatesTags: ["Shared links"],
         }),
+        sharedLinkLogin: build.mutation({
+            query: (queryArg) => ({
+                url: `/shared-links/login`,
+                method: "POST",
+                body: queryArg.sharedLinkLoginDto,
+                params: {
+                    key: queryArg.key,
+                    slug: queryArg.slug,
+                },
+            }),
+            invalidatesTags: ["Shared links"],
+        }),
         getMySharedLink: build.query({
             query: (queryArg) => ({
                 url: `/shared-links/me`,
                 params: {
                     key: queryArg.key,
-                    password: queryArg.password,
                     slug: queryArg.slug,
-                    token: queryArg.token,
                 },
             }),
             providesTags: ["Shared links"],
@@ -1406,10 +1517,6 @@ const injectedRtkApi = api
                 url: `/shared-links/${queryArg.id}/assets`,
                 method: "DELETE",
                 body: queryArg.assetIdsDto,
-                params: {
-                    key: queryArg.key,
-                    slug: queryArg.slug,
-                },
             }),
             invalidatesTags: ["Shared links"],
         }),
@@ -1418,10 +1525,6 @@ const injectedRtkApi = api
                 url: `/shared-links/${queryArg.id}/assets`,
                 method: "PUT",
                 body: queryArg.assetIdsDto,
-                params: {
-                    key: queryArg.key,
-                    slug: queryArg.slug,
-                },
             }),
             invalidatesTags: ["Shared links"],
         }),
@@ -1464,7 +1567,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.stackUpdateDto,
             }),
-            invalidatesTags: ["Stacks"],
+            invalidatesTags: ["Stacks", "Deprecated"],
         }),
         removeAssetFromStack: build.mutation({
             query: (queryArg) => ({
@@ -1492,22 +1595,6 @@ const injectedRtkApi = api
                 body: queryArg,
             }),
             invalidatesTags: ["Sync"],
-        }),
-        getDeltaSync: build.mutation({
-            query: (queryArg) => ({
-                url: `/sync/delta-sync`,
-                method: "POST",
-                body: queryArg,
-            }),
-            invalidatesTags: ["Sync", "Deprecated"],
-        }),
-        getFullSyncForUser: build.mutation({
-            query: (queryArg) => ({
-                url: `/sync/full-sync`,
-                method: "POST",
-                body: queryArg,
-            }),
-            invalidatesTags: ["Sync", "Deprecated"],
         }),
         getSyncStream: build.mutation({
             query: (queryArg) => ({
@@ -1591,7 +1678,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.tagUpdateDto,
             }),
-            invalidatesTags: ["Tags"],
+            invalidatesTags: ["Tags", "Deprecated"],
         }),
         untagAssets: build.mutation({
             query: (queryArg) => ({
@@ -1614,10 +1701,12 @@ const injectedRtkApi = api
                 url: `/timeline/bucket`,
                 params: {
                     albumId: queryArg.albumId,
+                    bbox: queryArg.bbox,
                     isFavorite: queryArg.isFavorite,
                     isTrashed: queryArg.isTrashed,
                     key: queryArg.key,
                     order: queryArg.order,
+                    orderBy: queryArg.orderBy,
                     personId: queryArg.personId,
                     slug: queryArg.slug,
                     tagId: queryArg.tagId,
@@ -1636,10 +1725,12 @@ const injectedRtkApi = api
                 url: `/timeline/buckets`,
                 params: {
                     albumId: queryArg.albumId,
+                    bbox: queryArg.bbox,
                     isFavorite: queryArg.isFavorite,
                     isTrashed: queryArg.isTrashed,
                     key: queryArg.key,
                     order: queryArg.order,
+                    orderBy: queryArg.orderBy,
                     personId: queryArg.personId,
                     slug: queryArg.slug,
                     tagId: queryArg.tagId,
@@ -1682,7 +1773,18 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg,
             }),
-            invalidatesTags: ["Users"],
+            invalidatesTags: ["Users", "Deprecated"],
+        }),
+        getMyCalendarHeatmap: build.query({
+            query: (queryArg) => ({
+                url: `/users/me/calendar-heatmap`,
+                params: {
+                    from: queryArg["from"],
+                    to: queryArg.to,
+                    type: queryArg["type"],
+                },
+            }),
+            providesTags: ["Users"],
         }),
         deleteUserLicense: build.mutation({
             query: () => ({ url: `/users/me/license`, method: "DELETE" }),
@@ -1726,7 +1828,7 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg,
             }),
-            invalidatesTags: ["Users"],
+            invalidatesTags: ["Users", "Deprecated"],
         }),
         deleteProfileImage: build.mutation({
             query: () => ({ url: `/users/profile-image`, method: "DELETE" }),
@@ -1761,8 +1863,17 @@ const injectedRtkApi = api
             query: () => ({ url: `/view/folder/unique-paths` }),
             providesTags: ["Views"],
         }),
-        getWorkflows: build.query({
-            query: () => ({ url: `/workflows` }),
+        searchWorkflows: build.query({
+            query: (queryArg) => ({
+                url: `/workflows`,
+                params: {
+                    description: queryArg.description,
+                    enabled: queryArg.enabled,
+                    id: queryArg.id,
+                    name: queryArg.name,
+                    trigger: queryArg.trigger,
+                },
+            }),
             providesTags: ["Workflows"],
         }),
         createWorkflow: build.mutation({
@@ -1772,6 +1883,10 @@ const injectedRtkApi = api
                 body: queryArg,
             }),
             invalidatesTags: ["Workflows"],
+        }),
+        getWorkflowTriggers: build.query({
+            query: () => ({ url: `/workflows/triggers` }),
+            providesTags: ["Workflows"],
         }),
         deleteWorkflow: build.mutation({
             query: (queryArg) => ({
@@ -1790,10 +1905,14 @@ const injectedRtkApi = api
                 method: "PUT",
                 body: queryArg.workflowUpdateDto,
             }),
-            invalidatesTags: ["Workflows"],
+            invalidatesTags: ["Workflows", "Deprecated"],
+        }),
+        getWorkflowForShare: build.query({
+            query: (queryArg) => ({ url: `/workflows/${queryArg}/share` }),
+            providesTags: ["Workflows"],
         }),
     }),
     overrideExisting: false,
 });
 export { injectedRtkApi as enhancedImmichApi };
-export const { useGetActivitiesQuery, useCreateActivityMutation, useGetActivityStatisticsQuery, useDeleteActivityMutation, useUnlinkAllOAuthAccountsAdminMutation, useDeleteDatabaseBackupMutation, useListDatabaseBackupsQuery, useStartDatabaseRestoreFlowMutation, useUploadDatabaseBackupMutation, useDownloadDatabaseBackupQuery, useSetMaintenanceModeMutation, useDetectPriorInstallQuery, useMaintenanceLoginMutation, useGetMaintenanceStatusQuery, useCreateNotificationMutation, useGetNotificationTemplateAdminMutation, useSendTestEmailAdminMutation, useSearchUsersAdminQuery, useCreateUserAdminMutation, useDeleteUserAdminMutation, useGetUserAdminQuery, useUpdateUserAdminMutation, useGetUserPreferencesAdminQuery, useUpdateUserPreferencesAdminMutation, useRestoreUserAdminMutation, useGetUserSessionsAdminQuery, useGetUserStatisticsAdminQuery, useGetAllAlbumsQuery, useCreateAlbumMutation, useAddAssetsToAlbumsMutation, useGetAlbumStatisticsQuery, useDeleteAlbumMutation, useGetAlbumInfoQuery, useUpdateAlbumInfoMutation, useRemoveAssetFromAlbumMutation, useAddAssetsToAlbumMutation, useRemoveUserFromAlbumMutation, useUpdateAlbumUserMutation, useAddUsersToAlbumMutation, useGetApiKeysQuery, useCreateApiKeyMutation, useGetMyApiKeyQuery, useDeleteApiKeyMutation, useGetApiKeyQuery, useUpdateApiKeyMutation, useDeleteAssetsMutation, useUploadAssetMutation, useUpdateAssetsMutation, useCheckBulkUploadMutation, useCopyAssetMutation, useGetAllUserAssetsByDeviceIdQuery, useCheckExistingAssetsMutation, useRunAssetJobsMutation, useDeleteBulkAssetMetadataMutation, useUpdateBulkAssetMetadataMutation, useGetRandomQuery, useGetAssetStatisticsQuery, useGetAssetInfoQuery, useUpdateAssetMutation, useRemoveAssetEditsMutation, useGetAssetEditsQuery, useEditAssetMutation, useGetAssetMetadataQuery, useUpdateAssetMetadataMutation, useDeleteAssetMetadataMutation, useGetAssetMetadataByKeyQuery, useGetAssetOcrQuery, useDownloadAssetQuery, useReplaceAssetMutation, useViewAssetQuery, usePlayAssetVideoQuery, useSignUpAdminMutation, useChangePasswordMutation, useLoginMutation, useLogoutMutation, useResetPinCodeMutation, useSetupPinCodeMutation, useChangePinCodeMutation, useLockAuthSessionMutation, useUnlockAuthSessionMutation, useGetAuthStatusQuery, useValidateAccessTokenMutation, useDownloadArchiveMutation, useGetDownloadInfoMutation, useDeleteDuplicatesMutation, useGetAssetDuplicatesQuery, useDeleteDuplicateMutation, useGetFacesQuery, useCreateFaceMutation, useDeleteFaceMutation, useReassignFacesByIdMutation, useGetQueuesLegacyQuery, useCreateJobMutation, useRunQueueCommandLegacyMutation, useGetAllLibrariesQuery, useCreateLibraryMutation, useDeleteLibraryMutation, useGetLibraryQuery, useUpdateLibraryMutation, useScanLibraryMutation, useGetLibraryStatisticsQuery, useValidateMutation, useGetMapMarkersQuery, useReverseGeocodeQuery, useSearchMemoriesQuery, useCreateMemoryMutation, useMemoriesStatisticsQuery, useDeleteMemoryMutation, useGetMemoryQuery, useUpdateMemoryMutation, useRemoveMemoryAssetsMutation, useAddMemoryAssetsMutation, useDeleteNotificationsMutation, useGetNotificationsQuery, useUpdateNotificationsMutation, useDeleteNotificationMutation, useGetNotificationQuery, useUpdateNotificationMutation, useStartOAuthMutation, useFinishOAuthMutation, useLinkOAuthAccountMutation, useRedirectOAuthToMobileQuery, useUnlinkOAuthAccountMutation, useGetPartnersQuery, useCreatePartnerMutation, useRemovePartnerMutation, useCreatePartnerDeprecatedMutation, useUpdatePartnerMutation, useDeletePeopleMutation, useGetAllPeopleQuery, useCreatePersonMutation, useUpdatePeopleMutation, useDeletePersonMutation, useGetPersonQuery, useUpdatePersonMutation, useMergePersonMutation, useReassignFacesMutation, useGetPersonStatisticsQuery, useGetPersonThumbnailQuery, useGetPluginsQuery, useGetPluginTriggersQuery, useGetPluginQuery, useGetQueuesQuery, useGetQueueQuery, useUpdateQueueMutation, useEmptyQueueMutation, useGetQueueJobsQuery, useGetAssetsByCityQuery, useGetExploreDataQuery, useSearchLargeAssetsMutation, useSearchAssetsMutation, useSearchPersonQuery, useSearchPlacesQuery, useSearchRandomMutation, useSearchSmartMutation, useSearchAssetStatisticsMutation, useGetSearchSuggestionsQuery, useGetAboutInfoQuery, useGetApkLinksQuery, useGetServerConfigQuery, useGetServerFeaturesQuery, useDeleteServerLicenseMutation, useGetServerLicenseQuery, useSetServerLicenseMutation, useGetSupportedMediaTypesQuery, usePingServerQuery, useGetServerStatisticsQuery, useGetStorageQuery, useGetThemeQuery, useGetServerVersionQuery, useGetVersionCheckQuery, useGetVersionHistoryQuery, useDeleteAllSessionsMutation, useGetSessionsQuery, useCreateSessionMutation, useDeleteSessionMutation, useUpdateSessionMutation, useLockSessionMutation, useGetAllSharedLinksQuery, useCreateSharedLinkMutation, useGetMySharedLinkQuery, useRemoveSharedLinkMutation, useGetSharedLinkByIdQuery, useUpdateSharedLinkMutation, useRemoveSharedLinkAssetsMutation, useAddSharedLinkAssetsMutation, useDeleteStacksMutation, useSearchStacksQuery, useCreateStackMutation, useDeleteStackMutation, useGetStackQuery, useUpdateStackMutation, useRemoveAssetFromStackMutation, useDeleteSyncAckMutation, useGetSyncAckQuery, useSendSyncAckMutation, useGetDeltaSyncMutation, useGetFullSyncForUserMutation, useGetSyncStreamMutation, useGetConfigQuery, useUpdateConfigMutation, useGetConfigDefaultsQuery, useGetStorageTemplateOptionsQuery, useGetAdminOnboardingQuery, useUpdateAdminOnboardingMutation, useGetReverseGeocodingStateQuery, useGetVersionCheckStateQuery, useGetAllTagsQuery, useCreateTagMutation, useUpsertTagsMutation, useBulkTagAssetsMutation, useDeleteTagMutation, useGetTagByIdQuery, useUpdateTagMutation, useUntagAssetsMutation, useTagAssetsMutation, useGetTimeBucketQuery, useGetTimeBucketsQuery, useEmptyTrashMutation, useRestoreTrashMutation, useRestoreAssetsMutation, useSearchUsersQuery, useGetMyUserQuery, useUpdateMyUserMutation, useDeleteUserLicenseMutation, useGetUserLicenseQuery, useSetUserLicenseMutation, useDeleteUserOnboardingMutation, useGetUserOnboardingQuery, useSetUserOnboardingMutation, useGetMyPreferencesQuery, useUpdateMyPreferencesMutation, useDeleteProfileImageMutation, useCreateProfileImageMutation, useGetUserQuery, useGetProfileImageQuery, useGetAssetsByOriginalPathQuery, useGetUniqueOriginalPathsQuery, useGetWorkflowsQuery, useCreateWorkflowMutation, useDeleteWorkflowMutation, useGetWorkflowQuery, useUpdateWorkflowMutation, } = injectedRtkApi;
+export const { useGetActivitiesQuery, useCreateActivityMutation, useGetActivityStatisticsQuery, useDeleteActivityMutation, useUnlinkAllOAuthAccountsAdminMutation, useDeleteDatabaseBackupMutation, useListDatabaseBackupsQuery, useStartDatabaseRestoreFlowMutation, useUploadDatabaseBackupMutation, useDownloadDatabaseBackupQuery, useGetIntegrityReportQuery, useDeleteIntegrityReportMutation, useGetIntegrityReportFileQuery, useGetIntegrityReportCsvQuery, useGetIntegrityReportSummaryQuery, useSetMaintenanceModeMutation, useDetectPriorInstallQuery, useMaintenanceLoginMutation, useGetMaintenanceStatusQuery, useCreateNotificationMutation, useGetNotificationTemplateAdminMutation, useSendTestEmailAdminMutation, useSearchUsersAdminQuery, useCreateUserAdminMutation, useDeleteUserAdminMutation, useGetUserAdminQuery, useUpdateUserAdminMutation, useGetUserCalendarHeatmapAdminQuery, useGetUserPreferencesAdminQuery, useUpdateUserPreferencesAdminMutation, useRestoreUserAdminMutation, useGetUserSessionsAdminQuery, useGetUserStatisticsAdminQuery, useGetAllAlbumsQuery, useCreateAlbumMutation, useAddAssetsToAlbumsMutation, useGetAlbumStatisticsQuery, useDeleteAlbumMutation, useGetAlbumInfoQuery, useUpdateAlbumInfoMutation, useRemoveAssetFromAlbumMutation, useAddAssetsToAlbumMutation, useGetAlbumMapMarkersQuery, useRemoveUserFromAlbumMutation, useUpdateAlbumUserMutation, useAddUsersToAlbumMutation, useGetApiKeysQuery, useCreateApiKeyMutation, useGetMyApiKeyQuery, useDeleteApiKeyMutation, useGetApiKeyQuery, useUpdateApiKeyMutation, useDeleteAssetsMutation, useUploadAssetMutation, useUpdateAssetsMutation, useCheckBulkUploadMutation, useCopyAssetMutation, useRunAssetJobsMutation, useDeleteBulkAssetMetadataMutation, useUpdateBulkAssetMetadataMutation, useGetAssetStatisticsQuery, useGetAssetInfoQuery, useUpdateAssetMutation, useRemoveAssetEditsMutation, useGetAssetEditsQuery, useEditAssetMutation, useGetAssetMetadataQuery, useUpdateAssetMetadataMutation, useDeleteAssetMetadataMutation, useGetAssetMetadataByKeyQuery, useGetAssetOcrQuery, useDownloadAssetQuery, useViewAssetQuery, usePlayAssetVideoQuery, useGetMainPlaylistQuery, useEndSessionMutation, useGetMediaPlaylistQuery, useGetSegmentQuery, useSignUpAdminMutation, useChangePasswordMutation, useLoginMutation, useLogoutMutation, useResetPinCodeMutation, useSetupPinCodeMutation, useChangePinCodeMutation, useLockAuthSessionMutation, useUnlockAuthSessionMutation, useGetAuthStatusQuery, useValidateAccessTokenMutation, useDownloadArchiveMutation, useGetDownloadInfoMutation, useDeleteDuplicatesMutation, useGetAssetDuplicatesQuery, useResolveDuplicatesMutation, useDeleteDuplicateMutation, useGetFacesQuery, useCreateFaceMutation, useDeleteFaceMutation, useReassignFacesByIdMutation, useGetQueuesLegacyQuery, useCreateJobMutation, useRunQueueCommandLegacyMutation, useGetAllLibrariesQuery, useCreateLibraryMutation, useDeleteLibraryMutation, useGetLibraryQuery, useUpdateLibraryMutation, useScanLibraryMutation, useGetLibraryStatisticsQuery, useValidateMutation, useGetMapMarkersQuery, useReverseGeocodeQuery, useSearchMemoriesQuery, useCreateMemoryMutation, useMemoriesStatisticsQuery, useDeleteMemoryMutation, useGetMemoryQuery, useUpdateMemoryMutation, useRemoveMemoryAssetsMutation, useAddMemoryAssetsMutation, useDeleteNotificationsMutation, useGetNotificationsQuery, useUpdateNotificationsMutation, useDeleteNotificationMutation, useGetNotificationQuery, useUpdateNotificationMutation, useStartOAuthMutation, useLogoutOAuthMutation, useFinishOAuthMutation, useLinkOAuthAccountMutation, useRedirectOAuthToMobileQuery, useUnlinkOAuthAccountMutation, useGetPartnersQuery, useCreatePartnerMutation, useRemovePartnerMutation, useCreatePartnerDeprecatedMutation, useUpdatePartnerMutation, useDeletePeopleMutation, useGetAllPeopleQuery, useCreatePersonMutation, useUpdatePeopleMutation, useDeletePersonMutation, useGetPersonQuery, useUpdatePersonMutation, useMergePersonMutation, useReassignFacesMutation, useGetPersonStatisticsQuery, useGetPersonThumbnailQuery, useSearchPluginsQuery, useSearchPluginMethodsQuery, useSearchPluginTemplatesQuery, useGetPluginQuery, useGetQueuesQuery, useGetQueueQuery, useUpdateQueueMutation, useEmptyQueueMutation, useGetQueueJobsQuery, useGetAssetsByCityQuery, useGetExploreDataQuery, useSearchLargeAssetsMutation, useSearchAssetsMutation, useSearchPersonQuery, useSearchPlacesQuery, useSearchRandomMutation, useSearchSmartMutation, useSearchAssetStatisticsMutation, useGetSearchSuggestionsQuery, useGetAboutInfoQuery, useGetApkLinksQuery, useGetServerConfigQuery, useGetServerFeaturesQuery, useDeleteServerLicenseMutation, useGetServerLicenseQuery, useSetServerLicenseMutation, useGetSupportedMediaTypesQuery, usePingServerQuery, useGetServerStatisticsQuery, useGetStorageQuery, useGetServerVersionQuery, useGetVersionCheckQuery, useGetVersionHistoryQuery, useDeleteAllSessionsMutation, useGetSessionsQuery, useCreateSessionMutation, useDeleteSessionMutation, useUpdateSessionMutation, useLockSessionMutation, useGetAllSharedLinksQuery, useCreateSharedLinkMutation, useSharedLinkLoginMutation, useGetMySharedLinkQuery, useRemoveSharedLinkMutation, useGetSharedLinkByIdQuery, useUpdateSharedLinkMutation, useRemoveSharedLinkAssetsMutation, useAddSharedLinkAssetsMutation, useDeleteStacksMutation, useSearchStacksQuery, useCreateStackMutation, useDeleteStackMutation, useGetStackQuery, useUpdateStackMutation, useRemoveAssetFromStackMutation, useDeleteSyncAckMutation, useGetSyncAckQuery, useSendSyncAckMutation, useGetSyncStreamMutation, useGetConfigQuery, useUpdateConfigMutation, useGetConfigDefaultsQuery, useGetStorageTemplateOptionsQuery, useGetAdminOnboardingQuery, useUpdateAdminOnboardingMutation, useGetReverseGeocodingStateQuery, useGetVersionCheckStateQuery, useGetAllTagsQuery, useCreateTagMutation, useUpsertTagsMutation, useBulkTagAssetsMutation, useDeleteTagMutation, useGetTagByIdQuery, useUpdateTagMutation, useUntagAssetsMutation, useTagAssetsMutation, useGetTimeBucketQuery, useGetTimeBucketsQuery, useEmptyTrashMutation, useRestoreTrashMutation, useRestoreAssetsMutation, useSearchUsersQuery, useGetMyUserQuery, useUpdateMyUserMutation, useGetMyCalendarHeatmapQuery, useDeleteUserLicenseMutation, useGetUserLicenseQuery, useSetUserLicenseMutation, useDeleteUserOnboardingMutation, useGetUserOnboardingQuery, useSetUserOnboardingMutation, useGetMyPreferencesQuery, useUpdateMyPreferencesMutation, useDeleteProfileImageMutation, useCreateProfileImageMutation, useGetUserQuery, useGetProfileImageQuery, useGetAssetsByOriginalPathQuery, useGetUniqueOriginalPathsQuery, useSearchWorkflowsQuery, useCreateWorkflowMutation, useGetWorkflowTriggersQuery, useDeleteWorkflowMutation, useGetWorkflowQuery, useUpdateWorkflowMutation, useGetWorkflowForShareQuery, } = injectedRtkApi;
